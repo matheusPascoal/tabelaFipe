@@ -15,20 +15,22 @@ class _CardsValuesState extends State<CardsValues> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 5, left: 8, right: 8),
+      padding: const EdgeInsets.only(
+        top: 5,
+      ),
       child: Container(
-        height: 35,
+        height: 40,
         width: 360,
         decoration: BoxDecoration(
-            color: Color.fromARGB(255, 236, 236, 236),
+            color: Color.fromARGB(255, 219, 217, 217),
             borderRadius: BorderRadius.circular(5)),
         child: Row(children: [
           Center(
             child: Container(
-              width: 85,
               child: Text(widget.label!,
+                  textScaleFactor: 0.7,
                   style: TextStyle(
-                    color: Color.fromARGB(255, 122, 122, 145),
+                    color: Color.fromARGB(255, 26, 26, 48),
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.start),
@@ -37,12 +39,15 @@ class _CardsValuesState extends State<CardsValues> {
           SizedBox(width: 80),
           Flexible(
             fit: FlexFit.tight,
-            child: Text(
-              widget.textValue!,
-              style: TextStyle(
-                color: Color.fromARGB(255, 122, 122, 145),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Text(
+                widget.textValue!,
+                style: TextStyle(
+                  color: Color.fromARGB(255, 62, 62, 78),
+                ),
+                textAlign: TextAlign.end,
               ),
-              textAlign: TextAlign.start,
             ),
           ),
         ]),
