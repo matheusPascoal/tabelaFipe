@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:tabela_fipe/model/api_imagem.dart';
 import 'package:tabela_fipe/model/brand_model.dart';
 import 'package:tabela_fipe/model/cars_model.dart';
 import 'package:tabela_fipe/service/constant.dart';
@@ -49,5 +50,18 @@ class FipeRepository {
     return CarsModel();
   }
 
-  getImage() async {}
+  Future<ApiImage> getImage(
+      String nameBrand, String nameModelCar, String nameYear) async {
+    try {
+      var result = await Dio().get(
+          "https://tabela-fipe-flipggs.vercel.app/api/image?q=$nameBrand $nameModelCar $nameYear");
+      if (result.statusCode == 200) {
+        return ApiImage.fromJson(result.data);
+      }
+    } on Exception catch (error) {
+      print(error);
+    }
+
+    return ApiImage();
+  }
 }

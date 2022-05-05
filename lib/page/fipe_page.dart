@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gif_view/gif_view.dart';
 import 'package:searchfield/searchfield.dart';
+import 'package:tabela_fipe/model/api_imagem.dart';
 import 'package:tabela_fipe/model/brand_model.dart';
 import 'package:tabela_fipe/model/cars_model.dart';
 import 'package:tabela_fipe/repository/repository.dart';
@@ -21,14 +22,15 @@ class _FipePageState extends State<FipePage> {
   FipeRepository fipeResository = FipeRepository();
 
   CarsModel car = CarsModel();
+  ApiImage apiImage = ApiImage();
 
   List<BrandModel> marcasSelect = [];
   List<BrandModel> modelCarSelect = [];
   List<BrandModel> yearSelect = [];
 
-  String codeBrand = '';
-  String codeModelCar = '';
-  String codeYear = '';
+  BrandModel codeBrand = BrandModel();
+  BrandModel codeModelCar = BrandModel();
+  BrandModel codeYear = BrandModel();
 
   bool isloading = false;
   bool validatorFild = false;
@@ -59,6 +61,13 @@ class _FipePageState extends State<FipePage> {
         await FipeRepository().getCar(codeModelCar, codeBrand, codeYear);
     car = result;
     isloading = false;
+    setState(() {});
+  }
+
+  getImage(String nameBrand, String nameModelCar, String nameYear) async {
+    var result =
+        await FipeRepository().getImage(nameBrand, nameModelCar, nameYear);
+    apiImage = result;
     setState(() {});
   }
 
@@ -118,8 +127,8 @@ class _FipePageState extends State<FipePage> {
                   controller: textBrandController,
                   onSuggestionTap: (value) async {
                     var brand = value.item as BrandModel;
-                    codeBrand = brand.codigo!;
-                    await getModelCar(codeBrand);
+                    codeBrand = brand;
+                    await getModelCar(codeBrand.codigo!);
                   },
                   hint: 'MARCA',
                   suggestions: marcasSelect
@@ -145,8 +154,8 @@ class _FipePageState extends State<FipePage> {
                   hint: 'MODELO',
                   onSuggestionTap: (value) async {
                     var model = value.item as BrandModel;
-                    codeModelCar = model.codigo!;
-                    await getYears(codeModelCar, codeBrand);
+                    codeModelCar = model;
+                    await getYears(codeModelCar.codigo!, codeBrand.codigo!);
                   },
                   suggestions: modelCarSelect
                       .map(
@@ -171,7 +180,7 @@ class _FipePageState extends State<FipePage> {
                           borderRadius: BorderRadius.circular(5))),
                   onSuggestionTap: (value) async {
                     var year = value.item as BrandModel;
-                    codeYear = year.codigo!;
+                    codeYear = year;
                   },
                   hint: 'ANO',
                   suggestions: yearSelect
@@ -199,7 +208,10 @@ class _FipePageState extends State<FipePage> {
                           isloading = true;
                           validatorFild = true;
                         });
-                        await getCar(codeModelCar, codeBrand, codeYear);
+                        await getCar(codeModelCar.codigo!, codeBrand.codigo!,
+                            codeYear.codigo!);
+                        await getImage(codeBrand.nome!, codeModelCar.nome!,
+                            codeYear.nome!);
                       },
                       child: Center(
                         child: Row(
@@ -344,8 +356,7 @@ class _FipePageState extends State<FipePage> {
                               borderRadius: BorderRadius.circular(20),
                               //color: Colors.pink,
                               image: DecorationImage(
-                                  image: NetworkImage(
-                                      'https://img1.gratispng.com/20180328/zkq/kisspng-2015-ferrari-laferrari-ferrari-812-superfast-mclar-ferrari-5abc30ebd15fe0.9498101415222827318576.jpg'),
+                                  image: NetworkImage(apiImage.imageUrl!),
                                   fit: BoxFit.fitWidth)),
                         )
                       ],
