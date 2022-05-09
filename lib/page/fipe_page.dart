@@ -24,7 +24,7 @@ class _FipePageState extends State<FipePage> {
   CarsModel car = CarsModel();
   ApiImage apiImage = ApiImage();
 
-  List<BrandModel> marcasSelect = [];
+  List<BrandModel> brandsSelect = [];
   List<BrandModel> modelCarSelect = [];
   List<BrandModel> yearSelect = [];
 
@@ -34,13 +34,17 @@ class _FipePageState extends State<FipePage> {
 
   bool isloading = false;
   bool validatorFild = false;
+  int currentPage = 0;
+  bool isColor = true;
+  bool _disable = true;
+
   var focus = FocusNode();
   var pageController = PageController();
 
   getBrand() async {
     var result = await FipeRepository().getBrand();
 
-    marcasSelect = result;
+    brandsSelect = result;
     setState(() {});
   }
 
@@ -71,7 +75,6 @@ class _FipePageState extends State<FipePage> {
     setState(() {});
   }
 
-  int currentPage = 0;
   @override
   void initState() {
     pageController.addListener(
@@ -87,17 +90,18 @@ class _FipePageState extends State<FipePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0XFFE8E9EE),
       appBar: AppBar(
         backgroundColor: Color(0XFF0B1F38),
         title: Padding(
-          padding: const EdgeInsets.only(left: 85),
+          padding: const EdgeInsets.only(left: 90),
           child: Row(children: [
             Icon(
               Icons.directions_car_rounded,
-              size: 40,
+              size: 25,
             ),
             SizedBox(
-              width: 20,
+              width: 5,
             ),
             Text(
               "TABELA FIPE",
@@ -125,13 +129,15 @@ class _FipePageState extends State<FipePage> {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5))),
                   controller: textBrandController,
-                  onSuggestionTap: (value) async {
-                    var brand = value.item as BrandModel;
-                    codeBrand = brand;
-                    await getModelCar(codeBrand.codigo!);
-                  },
+                  onSuggestionTap: brandsSelect.isNotEmpty
+                      ? (value) async {
+                          var brand = value.item as BrandModel;
+                          codeBrand = brand;
+                          await getModelCar(codeBrand.codigo!);
+                        }
+                      : null,
                   hint: 'MARCA',
-                  suggestions: marcasSelect
+                  suggestions: brandsSelect
                       .map(
                         (e) => SearchFieldListItem<BrandModel>(e.nome!,
                             child: Text(e.nome!), item: e),
@@ -152,11 +158,14 @@ class _FipePageState extends State<FipePage> {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5))),
                   hint: 'MODELO',
-                  onSuggestionTap: (value) async {
-                    var model = value.item as BrandModel;
-                    codeModelCar = model;
-                    await getYears(codeModelCar.codigo!, codeBrand.codigo!);
-                  },
+                  onSuggestionTap: modelCarSelect.isNotEmpty
+                      ? (value) async {
+                          var model = value.item as BrandModel;
+                          codeModelCar = model;
+                          await getYears(
+                              codeModelCar.codigo!, codeBrand.codigo!);
+                        }
+                      : null,
                   suggestions: modelCarSelect
                       .map(
                         (e) => SearchFieldListItem<BrandModel>(e.nome!,
@@ -178,10 +187,12 @@ class _FipePageState extends State<FipePage> {
                       suffixIcon: Icon(Icons.keyboard_arrow_down_sharp),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5))),
-                  onSuggestionTap: (value) async {
-                    var year = value.item as BrandModel;
-                    codeYear = year;
-                  },
+                  onSuggestionTap: yearSelect.isNotEmpty
+                      ? (value) async {
+                          var year = value.item as BrandModel;
+                          codeYear = year;
+                        }
+                      : null,
                   hint: 'ANO',
                   suggestions: yearSelect
                       .map((e) => SearchFieldListItem<BrandModel>(e.nome!,
@@ -202,17 +213,19 @@ class _FipePageState extends State<FipePage> {
                       style: ButtonStyle(
                           backgroundColor:
                               MaterialStateProperty.all(Color(0XFF0B1F38))),
-                      onPressed: () async {
-                        focus.unfocus();
-                        setState(() {
-                          isloading = true;
-                          validatorFild = true;
-                        });
-                        await getCar(codeModelCar.codigo!, codeBrand.codigo!,
-                            codeYear.codigo!);
-                        await getImage(codeBrand.nome!, codeModelCar.nome!,
-                            codeYear.nome!);
-                      },
+                      onPressed: yearSelect.isNotEmpty
+                          ? () async {
+                              focus.unfocus();
+                              setState(() {
+                                isloading = true;
+                                validatorFild = true;
+                              });
+                              await getCar(codeModelCar.codigo!,
+                                  codeBrand.codigo!, codeYear.codigo!);
+                              await getImage(codeBrand.nome!,
+                                  codeModelCar.nome!, codeYear.nome!);
+                            }
+                          : null,
                       child: Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -279,114 +292,120 @@ class _FipePageState extends State<FipePage> {
               if (validatorFild == true && isloading == false) ...[
                 Padding(
                   padding: const EdgeInsets.only(top: 5, left: 20, right: 20),
-                  child: Container(
-                    height: 400,
-                    child: PageView(
-                      controller: pageController,
-                      children: [
-                        Column(
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 350,
+                        child: PageView(
+                          controller: pageController,
                           children: [
-                            CardsValues(
-                                label: ' Mês de referência:',
-                                textValue: '${car.mesReferencia}  '),
-                            CardsValues(
-                                label: ' Marca:', textValue: '${car.marca}  '),
-                            CardsValues(
-                                label: ' Modelo:  ',
-                                textValue: '${car.modelo}  '),
-                            CardsValues(
-                                label: ' Ano:', textValue: '${car.anoModelo} '),
-                            CardsValues(
-                                label: ' Combustivel:',
-                                textValue: '${car.combustivel} '),
-                            CardsValues(
-                                label: ' Codigo FIPE:',
-                                textValue: '${car.codigoFipe}  '),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 25),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: Color(0XFF0B1F38),
-                                    borderRadius: BorderRadius.only(
-                                        topRight: Radius.circular(10),
-                                        topLeft: Radius.circular(10),
-                                        bottomRight: Radius.circular(20),
-                                        bottomLeft: Radius.circular(20))),
-                                child: Center(
-                                  child: Row(
-                                    children: [
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 20),
-                                        child: Text(
-                                          'Preço medio:',
-                                          style: TextStyle(
-                                              color: Color.fromARGB(
-                                                  255, 24, 142, 197),
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold),
-                                          textAlign: TextAlign.start,
-                                        ),
+                            Column(
+                              children: [
+                                CardsValues(
+                                    label: ' Mês de referência:',
+                                    textValue: '${car.mesReferencia}  '),
+                                CardsValues(
+                                    label: ' Marca:',
+                                    textValue: '${car.marca}  '),
+                                CardsValues(
+                                    label: ' Modelo:  ',
+                                    textValue: '${car.modelo}  '),
+                                CardsValues(
+                                    label: ' Ano:',
+                                    textValue: '${car.anoModelo} '),
+                                CardsValues(
+                                    label: ' Combustivel:',
+                                    textValue: '${car.combustivel} '),
+                                CardsValues(
+                                    label: ' Codigo FIPE:',
+                                    textValue: '${car.codigoFipe}  '),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 25),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: Color(0XFF0B1F38),
+                                        borderRadius: BorderRadius.only(
+                                            topRight: Radius.circular(10),
+                                            topLeft: Radius.circular(10),
+                                            bottomRight: Radius.circular(20),
+                                            bottomLeft: Radius.circular(20))),
+                                    child: Center(
+                                      child: Row(
+                                        children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 20),
+                                            child: Text(
+                                              'Preço medio:',
+                                              style: TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 24, 142, 197),
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold),
+                                              textAlign: TextAlign.start,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            width: 20,
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 10),
+                                            child: Text(
+                                              ' ${car.valor}',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  fontSize: 25),
+                                              textAlign: TextAlign.end,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      SizedBox(
-                                        width: 20,
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 10),
-                                        child: Text(
-                                          ' ${car.valor}',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              fontSize: 25),
-                                          textAlign: TextAlign.end,
-                                        ),
-                                      ),
-                                    ],
+                                    ),
+                                    height: 50,
                                   ),
-                                ),
-                                height: 50,
-                              ),
+                                )
+                              ],
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  //color: Colors.pink,
+                                  image: DecorationImage(
+                                      image:
+                                          NetworkImage(apiImage.imageUrl ?? ''),
+                                      fit: BoxFit.fitWidth)),
                             )
                           ],
                         ),
-                        Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              //color: Colors.pink,
-                              image: DecorationImage(
-                                  image: NetworkImage(apiImage.imageUrl!),
-                                  fit: BoxFit.fitWidth)),
-                        )
-                      ],
-                    ),
+                      ),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            2,
+                            (index) => GestureDetector(
+                              onTap: () {
+                                pageController.jumpToPage(index);
+                                currentPage = index;
+                                setState(() {});
+                              },
+                              child: Container(
+                                  margin: EdgeInsets.all(10),
+                                  height: 20,
+                                  width: 20,
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: currentPage == index
+                                          ? Colors.blue
+                                          : Colors.grey)),
+                            ),
+                          ))
+                    ],
                   ),
                 ),
-                Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      2,
-                      (index) => Container(
-                          margin: EdgeInsets.symmetric(horizontal: 5),
-                          height: 10,
-                          width: 10,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: currentPage == index
-                                  ? Colors.blue
-                                  : Colors.grey)),
-                    )
-
-                    //AREA DO CARD COM VALORES DA PESQUISA
-                    )
               ],
               if (isloading == true)
-                // Container(
-                //   height: 50,
-                //   width: 50,
-                //   child: CircularProgressIndicator(),
-                // )
                 GifView.asset(
                   'assets/loader.gif',
                   height: 200,

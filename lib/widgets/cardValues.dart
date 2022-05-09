@@ -22,7 +22,7 @@ class _CardsValuesState extends State<CardsValues> {
         height: 40,
         width: 360,
         decoration: BoxDecoration(
-            color: Color.fromARGB(255, 219, 217, 217),
+            color: Color.fromARGB(255, 255, 255, 255),
             borderRadius: BorderRadius.circular(5)),
         child: Row(children: [
           Center(
